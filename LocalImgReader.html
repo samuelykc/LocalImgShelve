@@ -1,0 +1,94 @@
+<html>
+    <!-- <head>
+		<link rel="stylesheet" href="main.css">
+    </head> -->
+    <style type="text/css">
+    	body
+		{
+			background-color: #3c3f41;
+		}
+    	img
+		{
+            max-width: 100vw;
+            max-height: 100vh;
+			margin-right: 5px;
+			margin-top: 5px;
+		}
+    </style>
+
+	<body>
+
+	</body>
+
+	<script>
+		//------------- paging -------------
+		document.body.onkeydown = function(e)
+		{
+			// console.log(e.code) 
+			switch (event.key)
+			{
+			    case "ArrowLeft":  //jump to img above current pos
+			    	e.preventDefault();
+			    	yOfImageAboveCurrentPos = Number.NEGATIVE_INFINITY;
+					for (const image of document.getElementsByTagName('img'))
+					{
+						console.log(image.getBoundingClientRect());
+						if(image.getBoundingClientRect().top >= 0)
+						{
+							document.documentElement.scrollTop += yOfImageAboveCurrentPos;
+							document.body.scrollTop += yOfImageAboveCurrentPos;
+							break;
+						}
+						else
+						{
+							yOfImageAboveCurrentPos = image.getBoundingClientRect().top;
+						}
+					}
+			        break;
+			    case "ArrowRight":  //jump to img below current pos
+			    	e.preventDefault();
+					for (const image of document.getElementsByTagName('img'))
+					{
+						console.log(image.getBoundingClientRect());
+						if(image.getBoundingClientRect().top >= 1)	//prevent cases that the top is a positive number close to 0
+						{
+							document.documentElement.scrollTop += image.getBoundingClientRect().top;
+							document.body.scrollTop += image.getBoundingClientRect().top;
+							break;
+						}
+					}
+			        break;
+			    // case "ArrowUp":
+			    //     break;
+			    // case "ArrowDown":
+			    //     break;
+			}
+		};
+		//------------- paging -------------
+
+		const queryString = window.location.search;
+		const urlParams = new URLSearchParams(queryString);
+
+		let imageList = decodeURIComponent(urlParams.get('imgList')).split(':');
+		let path = decodeURIComponent(urlParams.get('path'));
+
+		console.log(imageList);
+		console.log(path);
+
+	  	function printImageList()
+	  	{
+	  		//clear body
+	  		document.body.innerHTML = '';
+
+	  		//print images
+			for (const image of imageList) {
+				var img = document.createElement("img");
+				img.src = path + '/' + image;
+
+				document.body.appendChild(img);
+			}
+		}
+
+		printImageList();
+	</script>
+</html>

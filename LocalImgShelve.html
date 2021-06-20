@@ -1,0 +1,220 @@
+<html>
+    <!-- <head>
+		<link rel="stylesheet" href="main.css">
+    </head> -->
+    <style type="text/css">
+    	body
+		{
+			background-color: #3c3f41;
+		}
+		.HeaderP
+		{
+			color: white;
+		}
+    	.SquareIcon
+		{
+            width: 250px;
+            height: 280px;
+
+            display: inline-block;
+			margin: 10px;
+			padding: 0px 10px 0px 10px;
+
+			text-align: center;
+			vertical-align: middle;
+
+			border-radius: 10px;
+			background-color: #919191;
+
+			cursor: pointer;
+		}
+    	.SquareIconP
+		{
+            height: 42px;
+			padding-bottom: 10px;
+		}
+    	.SquareIconPFolder
+		{
+            height: 80px;
+			padding-bottom: 10px;
+			font-weight: bold;
+		}
+    	.SquareIconImg
+		{
+            height: 200px;
+		}
+
+		img
+		{
+            max-width: 100%;
+            max-height: 100%;
+		}
+    </style>
+
+	<body>
+
+	</body>
+
+	<script src="LocalImgShelveJson.txt"></script>
+	<script>
+		// records = [
+		// 	{
+		// 		folder:"Comic",
+		// 		contents:
+		// 		[
+		// 			{
+		// 				folder:"(成年コミック) [40010試作型] プロトタイプ マドモアゼル",
+		// 				contents:
+		// 				[
+		// 					"000.jpg",
+		// 					"001.jpg",
+		// 					"002.jpg",
+		// 					"003.jpg"
+		// 				]
+		// 			},
+		// 			{
+		// 				folder:"(成年コミック) [アンソロジー] L -Ladies & Girls Love- 01",
+		// 				contents:
+		// 				[
+		// 					"001.jpg",
+		// 					"002.jpg",
+		// 					"003.jpg"
+		// 				]
+		// 			}
+		// 		]
+		// 	},
+		// 	{
+
+		// 	}
+		// ];
+
+
+		let path = [];
+		
+	  	function pathChanged()
+	  	{
+	  		console.log(path);
+
+	  		//clear body
+	  		document.body.innerHTML = '';
+
+
+	  		//print path
+			let headerP = document.createElement("p");
+			headerP.innerHTML = "Path: " + path.join('/');
+			headerP.classList.add('HeaderP')
+			document.body.appendChild(headerP);
+
+
+	  		//dig into the designated level accroding to current path
+	  		recordPos = records;
+
+			for (const p of path) {
+				const nextPos = recordPos.find(element => element.folder === p);
+				recordPos = nextPos.contents
+			}
+
+
+	  		//print folders in this level
+			for (const record of recordPos) {
+				//create SquareIcon
+				let div = document.createElement("div");
+				div.classList.add('SquareIcon')
+				div.addEventListener('click', event => {browse(record)})
+				document.body.appendChild(div);
+
+				//create SquareIconP
+				let div_p = document.createElement("div");
+				div_p.classList.add('SquareIconP')
+				div.appendChild(div_p);
+
+				let p = document.createElement("p");
+				p.innerHTML = record.folder;
+				div_p.appendChild(p);
+
+				//create SquareIconImg
+				if(record.contents && (typeof record.contents[0])==="string")
+				{
+					let div_img = document.createElement("div");
+					div_img.classList.add('SquareIconImg')
+					div.appendChild(div_img);
+
+					let img = document.createElement("img");
+					img.src = path.join('/') + (path.length>0?'/':'')  + record.folder + '/' + encodeURIComponent(record.contents[0]);
+					div_img.appendChild(img);
+				}
+				else
+				{
+					div_p.classList.add('SquareIconPFolder')
+				}
+
+				// console.log(record.contents)
+				// console.log(typeof record.contents[0])
+			}
+		}
+
+
+	  	function browse(record)
+	  	{
+	  		//reject empty folder
+	  		if(!record.contents || record.contents.length <= 0)
+	  		{
+	  			return;
+	  		}
+
+			//open gallery
+	  		if(record.contents && (typeof record.contents[0])==="string")
+	  		{
+				var win = window.open("LocalImgReader.html?"+
+					"imgList=" + encodeURIComponent(record.contents.join(':')) + //list of file names
+					"&path=" + encodeURIComponent(path.join('/') + (path.length>0?'/':'') + record.folder));//path prefix for files
+				win.focus();
+	  		}
+			//open folder
+	  		else
+	  		{
+		  		path.push(record.folder);
+				pathChanged();
+	  		}
+		}
+
+	  	function goBack()
+	  	{
+	  		path.pop();
+			pathChanged();
+		}
+
+		
+
+		pathChanged();
+
+
+
+
+		//------------- paging -------------
+		document.body.onkeydown = function(e)
+		{
+			// console.log(e.code);
+			switch (event.key)
+			{
+			    case "GoBack": case "Backspace":
+			    	e.preventDefault();
+			    	goBack();
+			        break;
+			}
+		};
+
+		window.addEventListener("mouseup", e => {
+			switch (event.button)
+			{
+			    case 3:
+			    	e.preventDefault();
+			    	goBack();
+			        break;
+         		case 4:
+			        break;
+			}
+        })
+		//------------- paging -------------
+	</script>
+</html>
