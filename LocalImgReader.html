@@ -1,94 +1,122 @@
 <html>
-    <!-- <head>
-		<link rel="stylesheet" href="main.css">
-    </head> -->
-    <style type="text/css">
-    	body
-		{
-			background-color: #3c3f41;
-		}
-    	img
-		{
-            max-width: 100vw;
-            max-height: 100vh;
-			margin-right: 5px;
-			margin-top: 5px;
-		}
-    </style>
+<head>
+<meta charset="UTF-8">
+<title>Local Image Reader</title>
+<style>
+    body {
+        background-color: #1a1a1a;
+        margin: 0;
+        overflow: hidden;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        height: 100vh;
+        color: white;
+        font-family: sans-serif;
+        user-select: none;
+    }
 
-	<body>
+    #viewer {
+        position: relative;
+        width: 100%;
+        height: 100%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
 
-	</body>
+    #viewer img {
+        max-width: 95%;
+        max-height: 95%;
+        transition: opacity 0.3s ease;
+    }
 
-	<script>
-		//------------- paging -------------
-		document.body.onkeydown = function(e)
-		{
-			// console.log(e.code) 
-			switch (event.key)
-			{
-			    case "ArrowLeft":  //jump to img above current pos
-			    	e.preventDefault();
-			    	yOfImageAboveCurrentPos = Number.NEGATIVE_INFINITY;
-					for (const image of document.getElementsByTagName('img'))
-					{
-						console.log(image.getBoundingClientRect());
-						if(image.getBoundingClientRect().top >= 0)
-						{
-							document.documentElement.scrollTop += yOfImageAboveCurrentPos;
-							document.body.scrollTop += yOfImageAboveCurrentPos;
-							break;
-						}
-						else
-						{
-							yOfImageAboveCurrentPos = image.getBoundingClientRect().top;
-						}
-					}
-			        break;
-			    case "ArrowRight":  //jump to img below current pos
-			    	e.preventDefault();
-					for (const image of document.getElementsByTagName('img'))
-					{
-						console.log(image.getBoundingClientRect());
-						if(image.getBoundingClientRect().top >= 1)	//prevent cases that the top is a positive number close to 0
-						{
-							document.documentElement.scrollTop += image.getBoundingClientRect().top;
-							document.body.scrollTop += image.getBoundingClientRect().top;
-							break;
-						}
-					}
-			        break;
-			    // case "ArrowUp":
-			    //     break;
-			    // case "ArrowDown":
-			    //     break;
-			}
-		};
-		//------------- paging -------------
+    #controls {
+        position: absolute;
+        bottom: 15px;
+        left: 50%;
+        transform: translateX(-50%);
+        font-size: 14px;
+        opacity: 0.7;
+    }
 
-		const queryString = window.location.search;
-		const urlParams = new URLSearchParams(queryString);
+    .nav-btn {
+        position: absolute;
+        top: 50%;
+        transform: translateY(-50%);
+        font-size: 48px;
+        color: white;
+        background: rgba(0, 0, 0, 0.3);
+        border: none;
+        cursor: pointer;
+        padding: 10px;
+        border-radius: 8px;
+        transition: background 0.2s;
+    }
+    .nav-btn:hover {
+        background: rgba(0, 0, 0, 0.6);
+    }
+    #prevBtn { left: 20px; }
+    #nextBtn { right: 20px; }
+</style>
+</head>
+<body>
 
-		let imageList = decodeURIComponent(urlParams.get('imgList')).split(':');
-		let path = decodeURIComponent(urlParams.get('path'));
+<div id="viewer">
+    <button id="prevBtn" class="nav-btn">&#10094;</button>
+    <img id="mainImage" src="" alt="Image">
+    <button id="nextBtn" class="nav-btn">&#10095;</button>
+    <div id="controls"></div>
+</div>
 
-		console.log(imageList);
-		console.log(path);
+<script>
+    // Parse URL parameters
+    const urlParams = new URLSearchParams(window.location.search);
+    let imageList = decodeURIComponent(urlParams.get('imgList')).split(':');
+    let path = decodeURIComponent(urlParams.get('path'));
 
-	  	function printImageList()
-	  	{
-	  		//clear body
-	  		document.body.innerHTML = '';
+    let currentIndex = 0;
+    const imgEl = document.getElementById('mainImage');
+    const controlsEl = document.getElementById('controls');
 
-	  		//print images
-			for (const image of imageList) {
-				var img = document.createElement("img");
-				img.src = path + '/' + image;
+    function updateViewer(index) {
+        if (index < 0 || index >= imageList.length) return;
+        currentIndex = index;
+        imgEl.style.opacity = 0;
 
-				document.body.appendChild(img);
-			}
-		}
+        // Set image source
+        const src = `${path}/${imageList[currentIndex]}`;
+        imgEl.onload = () => { imgEl.style.opacity = 1; };
+        imgEl.src = src;
 
-		printImageList();
-	</script>
+        // Update controls text
+        controlsEl.textContent = `${currentIndex + 1} / ${imageList.length}`;
+        
+        // Preload next/previous images for smoother navigation
+        preloadImage(currentIndex + 1);
+        preloadImage(currentIndex - 1);
+    }
+
+    function preloadImage(index) {
+        if (index >= 0 && index < imageList.length) {
+            const preImg = new Image();
+            preImg.src = `${path}/${imageList[index]}`;
+        }
+    }
+
+    // Navigation
+    document.getElementById('prevBtn').addEventListener('click', () => updateViewer(currentIndex - 1));
+    document.getElementById('nextBtn').addEventListener('click', () => updateViewer(currentIndex + 1));
+
+    document.addEventListener('keydown', e => {
+        if (e.key === 'ArrowRight') updateViewer(currentIndex + 1);
+        if (e.key === 'ArrowLeft') updateViewer(currentIndex - 1);
+        // if (e.key === 'Escape') window.close();
+    });
+
+    // Start
+    updateViewer(0);
+</script>
+
+</body>
 </html>
