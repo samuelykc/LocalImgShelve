@@ -8,6 +8,7 @@
             margin: 0;
             overflow: hidden;
             display: flex;
+            flex-direction: column;
             align-items: center;
             justify-content: center;
             height: 100vh;
@@ -19,7 +20,7 @@
         #viewer {
             position: relative;
             width: 100%;
-            height: 100%;
+            height: calc(100vh - 120px); /* Adjusted height to make space for the filmstrip */
             display: flex;
             align-items: center;
             justify-content: center;
@@ -81,6 +82,45 @@
         #modeBtn:hover {
             background: rgba(0,0,0,0.6);
         }
+        
+        #filmstrip {
+            position: relative;
+            width: 100%;
+            height: 100px;
+            background: rgba(0, 0, 0, 0.2);
+            padding: 10px 0;
+            white-space: nowrap;
+            overflow-x: auto;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            box-sizing: border-box;
+            border-top: 1px solid rgba(255,255,255,0.1);
+        }
+
+        .thumbnail {
+            width: auto;
+            height: 80px;
+            object-fit: contain;
+            cursor: pointer;
+            border: 2px solid transparent;
+            transition: all 0.2s ease;
+            filter: grayscale(100%);
+            opacity: 0.6;
+        }
+
+        .thumbnail:hover {
+            transform: scale(1.1);
+            filter: grayscale(0%);
+            opacity: 1;
+        }
+
+        .thumbnail.active {
+            border-color: #007bff;
+            filter: grayscale(0%);
+            opacity: 1;
+            transform: scale(1.1);
+        }
     </style>
 </head>
 
@@ -93,6 +133,9 @@
         <div id="controls"></div>
         <button id="modeBtn">(mode)</button>
     </div>
+    
+    <div id="filmstrip"></div>
+
 </body>
 
 <script>
@@ -106,6 +149,7 @@
 
     const img1 = document.getElementById('img1');
     const img2 = document.getElementById('img2');
+    const filmstripEl = document.getElementById('filmstrip');
 
     const modeBtn = document.getElementById('modeBtn');
     modeBtn.innerText = getModeLabel(mode);
@@ -130,8 +174,25 @@
     });
 
     // Start
+    initFilmstrip();
     updateViewer(currentIndex);
 
+
+    function initFilmstrip() {
+        // Clear any existing thumbnails
+        filmstripEl.innerHTML = '';
+        imageList.forEach((imageName, index) => {
+            const thumbnail = document.createElement('img');
+            thumbnail.classList.add('thumbnail');
+            thumbnail.src = `${path}/${imageName}`;
+            thumbnail.dataset.index = index;
+            thumbnail.alt = `Thumbnail for image ${index + 1}`;
+            thumbnail.addEventListener('click', () => {
+                updateViewer(index);
+            });
+            filmstripEl.appendChild(thumbnail);
+        });
+    }
 
     function updateViewer(index) {
         if (index < 0) index = 0;
@@ -142,6 +203,29 @@
         img2.style.opacity = 0;
 
         showByMode(mode);
+        updateFilmstrip();
+    }
+
+    function updateFilmstrip() {
+        // Remove active class from all thumbnails
+        document.querySelectorAll('.thumbnail').forEach(thumb => {
+            thumb.classList.remove('active');
+            thumb.style.transform = 'scale(1.0)';
+        });
+        
+        // Add active class to the current thumbnail
+        const currentThumbnail = document.querySelector(`.thumbnail[data-index='${currentIndex}']`);
+        if (currentThumbnail) {
+            currentThumbnail.classList.add('active');
+            // Scroll to the active thumbnail
+            const filmstripScroll = filmstripEl.scrollWidth > filmstripEl.clientWidth;
+            if (filmstripScroll) {
+                filmstripEl.scroll({
+                    left: currentThumbnail.offsetLeft - (filmstripEl.clientWidth / 2) + (currentThumbnail.clientWidth / 2),
+                    behavior: 'smooth'
+                });
+            }
+        }
     }
 
     function showByMode(viewMode)
@@ -276,3 +360,4 @@
         }
     }
 </script>
+</html>
