@@ -214,8 +214,8 @@
     }
     function updatePagination()
     {
-        prevBtn.disabled = (currentIndex === 0);
-        nextBtn.disabled = (currentIndex >= imageList.length-1);
+        prevBtn.disabled = !hasPrev();
+        nextBtn.disabled = !hasNext();
     }
 
     function preloadImage(index) {
@@ -227,15 +227,19 @@
 
     function goPrev()
     {
-        if (mode === 0) updateViewer(currentIndex - 1);
-        else if (mode === 1 || mode === 2) updateViewer(currentIndex - 2);
-        else if (mode === 3) getSmartStep(false).then(step => { updateViewer(currentIndex - step); });
+        if(!hasPrev()) return;
+
+        if(mode === 0) updateViewer(currentIndex - 1);
+        else if(mode === 1 || mode === 2) updateViewer(currentIndex - 2);
+        else if(mode === 3) getSmartStep(false).then(step => { updateViewer(currentIndex - step); });
     }
     function goNext()
     {
-        if (mode === 0) updateViewer(currentIndex + 1);
-        else if (mode === 1 || mode === 2) updateViewer(currentIndex + 2);
-        else if (mode === 3) getSmartStep(true).then(step => { updateViewer(currentIndex + step); });
+        if(!hasNext()) return;
+
+        if(mode === 0) updateViewer(currentIndex + 1);
+        else if(mode === 1 || mode === 2) updateViewer(currentIndex + 2);
+        else if(mode === 3) getSmartStep(true).then(step => { updateViewer(currentIndex + step); });
     }
 
     function getSmartStep(isNext)
@@ -257,6 +261,8 @@
             });
         }
     }
+    function hasPrev() { return currentIndex > 0; }
+    function hasNext() { return currentIndex < imageList.length-1; }
 
     function getModeLabel(mode)
     {
