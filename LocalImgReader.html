@@ -86,7 +86,7 @@
     <img id="img2" class="viewer-img" src="" alt="Image" style="display:none;">
     <button id="nextBtn" class="nav-btn">&#10095;</button>
     <div id="controls"></div>
-    <button id="modeBtn">Mode: Single</button>
+    <button id="modeBtn">📄Single</button>
 </div>
 
 <script>
@@ -165,7 +165,7 @@
     // Mode toggle
     modeBtn.addEventListener('click', () => {
         mode = (mode + 1) % 3;
-        modeBtn.textContent = mode === 0 ? 'Mode: Single' : (mode === 1 ? 'Mode: Double' : 'Mode: Double Inverted');
+        modeBtn.textContent = mode === 0 ? '📄Single' : (mode === 1 ? '📖Double' : '📖Inverted');
         updateViewer(currentIndex);
     });
 
