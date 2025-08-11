@@ -8,6 +8,7 @@
             margin: 0;
             overflow: hidden;
             display: flex;
+            flex-direction: column;
             align-items: center;
             justify-content: center;
             height: 100vh;
@@ -19,7 +20,7 @@
         #viewer {
             position: relative;
             width: 100%;
-            height: 100%;
+            height: calc(100vh - 120px); /* Adjusted height to make space for the filmstrip */
             display: flex;
             align-items: center;
             justify-content: center;
@@ -35,7 +36,7 @@
 
         #controls {
             position: absolute;
-            bottom: 15px;
+            bottom: 5px;
             left: 50%;
             transform: translateX(-50%);
             font-size: 14px;
@@ -68,7 +69,7 @@
 
         #modeBtn {
             position: absolute;
-            top: 15px;
+            top: 0px;
             right: 15px;
             background: rgba(0,0,0,0.3);
             color: white;
@@ -80,6 +81,64 @@
         }
         #modeBtn:hover {
             background: rgba(0,0,0,0.6);
+        }
+        
+        #filmstrip {
+            position: relative;
+            width: 100%;
+            height: 100px;
+            background: rgba(0, 0, 0, 0.2);
+            padding: 10px 0;
+            white-space: nowrap;
+            overflow-x: auto;
+            overflow-y: hidden; /* Hides vertical scrollbar */
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            box-sizing: border-box;
+            border-top: 1px solid rgba(255,255,255,0.1);
+        }
+        
+        /* [filmstrip] horizontal scrollbar */
+        #filmstrip::-webkit-scrollbar {
+            height: 8px;
+        }
+        #filmstrip::-webkit-scrollbar-track {
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 10px;
+        }
+        #filmstrip::-webkit-scrollbar-thumb {
+            background-color: rgba(255, 255, 255, 0.3);
+            border-radius: 10px;
+            border: 2px solid transparent;
+            background-clip: content-box;
+        }
+        #filmstrip { /* Fallback for Firefox */
+            scrollbar-width: thin;
+            scrollbar-color: rgba(255, 255, 255, 0.3) rgba(255, 255, 255, 0.1);
+        }
+
+        /* [filmstrip] thumbnail */
+        .thumbnail {
+            width: auto;
+            height: 80px;
+            object-fit: contain;
+            cursor: pointer;
+            border: 2px solid transparent;
+            transition: all 0.2s ease;
+            filter: grayscale(100%);
+            opacity: 0.6;
+        }
+        .thumbnail:hover {
+            transform: scale(1.1);
+            filter: grayscale(0%);
+            opacity: 1;
+        }
+        .thumbnail.active {
+            border-color: #007bff;
+            filter: grayscale(0%);
+            opacity: 1;
+            transform: scale(1.1);
         }
     </style>
 </head>
@@ -93,6 +152,9 @@
         <div id="controls"></div>
         <button id="modeBtn">(mode)</button>
     </div>
+    
+    <div id="filmstrip"></div>
+
 </body>
 
 <script>
@@ -102,10 +164,13 @@
     let path = decodeURIComponent(urlParams.get('path'));
 
     let currentIndex = 0;
+    let currentDisplayCount = 1;
     let mode = 3; // 0=Single, 1=Double, 2=Double Inverted, 3=Smart
 
+    // Find & initialize UI elements
     const img1 = document.getElementById('img1');
     const img2 = document.getElementById('img2');
+    const filmstripEl = document.getElementById('filmstrip');
 
     const modeBtn = document.getElementById('modeBtn');
     modeBtn.innerText = getModeLabel(mode);
@@ -114,6 +179,7 @@
     const nextBtn = document.getElementById('nextBtn');
     const controlsEl = document.getElementById('controls');
 
+    // Transverse
     prevBtn.addEventListener('click', goPrev);
     nextBtn.addEventListener('click', goNext);
 
@@ -122,6 +188,13 @@
         if(e.key === 'ArrowRight') goNext();
     });
 
+    document.addEventListener('wheel', e => {
+        e.preventDefault(); // Prevent default browser scroll behavior
+
+        if(e.deltaY < 0) goPrev();
+        else if (e.deltaY > 0) goNext();
+    }, { passive: false }); // `passive: false` is important to allow e.preventDefault() to work
+
     // Mode toggle
     modeBtn.addEventListener('click', () => {
         mode = (mode + 1) % 4;
@@ -129,11 +202,12 @@
         updateViewer(currentIndex);
     });
 
-    // Start
+    // Initialize
+    initFilmstrip();
     updateViewer(currentIndex);
 
 
-    function updateViewer(index) {
+    async function updateViewer(index) {
         if (index < 0) index = 0;
         if (index >= imageList.length) index = imageList.length - 1;
         currentIndex = index;
@@ -141,13 +215,65 @@
         img1.style.opacity = 0;
         img2.style.opacity = 0;
 
-        showByMode(mode);
+        await showByMode(mode);
+        updateFilmstrip();
     }
 
-    function showByMode(viewMode)
+    
+    function initFilmstrip()
+    {
+        // Clear any existing thumbnails
+        filmstripEl.innerHTML = '';
+
+        // Append thumbnails
+        imageList.forEach((imageName, index) => {
+            const thumbnail = document.createElement('img');
+            thumbnail.classList.add('thumbnail');
+            thumbnail.src = `${path}/${imageName}`;
+            thumbnail.dataset.index = index;
+            thumbnail.alt = `Thumbnail for image ${index + 1}`;
+            thumbnail.addEventListener('click', () => { updateViewer(index); });
+            filmstripEl.appendChild(thumbnail);
+        });
+    }
+    function updateFilmstrip()
+    {
+        // Remove active class from all thumbnails
+        document.querySelectorAll('.thumbnail').forEach(thumb => {
+            thumb.classList.remove('active');
+            thumb.style.transform = 'scale(1.0)';
+        });
+        
+        // Add active class to the current thumbnail (img1)
+        const currentThumbnail = document.querySelector(`.thumbnail[data-index='${currentIndex}']`);
+        if(currentThumbnail)
+        {
+            currentThumbnail.classList.add('active');
+
+            // Scroll to the active thumbnail
+            const filmstripScroll = filmstripEl.scrollWidth > filmstripEl.clientWidth;
+            if(filmstripScroll)
+            {
+                filmstripEl.scroll({
+                    left: currentThumbnail.offsetLeft - (filmstripEl.clientWidth / 2) + (currentThumbnail.clientWidth / 2),
+                    behavior: 'smooth'
+                });
+            }
+        }
+        
+        // Add active class to the current thumbnail (img2)
+        if(currentDisplayCount > 1)
+        {
+            const currentThumbnail2 = document.querySelector(`.thumbnail[data-index='${currentIndex+1}']`);
+            if(currentThumbnail2) currentThumbnail2.classList.add('active');
+        }
+    }
+
+    async function showByMode(viewMode)
     {
         if(viewMode === 0) // Single page
         {
+            currentDisplayCount = 1;
             img2.style.display = 'none';
             setImage(img1, currentIndex, () => img1.style.opacity = 1);
             controlsEl.textContent = `${currentIndex + 1} / ${imageList.length}`;
@@ -156,6 +282,7 @@
         }
         else if(viewMode === 1) // Double page (normal)
         { 
+            currentDisplayCount = 2;
             img2.style.display = '';
             setImage(img1, currentIndex, () => img1.style.opacity = 1);
             setImage(img2, currentIndex + 1, () => img2.style.opacity = 1);
@@ -166,6 +293,7 @@
         }
         else if(viewMode === 2) // Double page (inverted)
         {
+            currentDisplayCount = 2;
             img2.style.display = '';
             setImage(img2, currentIndex, () => img2.style.opacity = 1);
             setImage(img1, currentIndex + 1, () => img1.style.opacity = 1);
@@ -177,12 +305,12 @@
         else if(viewMode === 3) // Smart mode: decide layout after reading dimensions
         {
             // Load current & next to check orientation
-            Promise.all([
+            return Promise.all([
                 getImageSize(`${path}/${imageList[currentIndex]}`),
                 getImageSize(currentIndex + 1 < imageList.length ? `${path}/${imageList[currentIndex+1]}` : null)
             ]).then(([curr, next]) => {
 
-                if (curr && next &&
+                if(curr && next &&
                     curr.height >= curr.width && next.height >= next.width)
                     showByMode(2); // Double inverted
                 else
@@ -246,7 +374,7 @@
     {
         if(isNext)
         {
-            return Promise.resolve(img2.style.display==='none'? 1: 2);
+            return Promise.resolve(currentDisplayCount);
         }
         else
         {
@@ -262,7 +390,7 @@
         }
     }
     function hasPrev() { return currentIndex > 0; }
-    function hasNext() { return currentIndex < imageList.length-1; }
+    function hasNext() { return currentIndex+currentDisplayCount < imageList.length; }
 
     function getModeLabel(mode)
     {
@@ -276,3 +404,4 @@
         }
     }
 </script>
+</html>
