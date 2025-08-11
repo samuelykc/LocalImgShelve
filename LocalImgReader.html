@@ -86,7 +86,7 @@
     <img id="img2" class="viewer-img" src="" alt="Image" style="display:none;">
     <button id="nextBtn" class="nav-btn">&#10095;</button>
     <div id="controls"></div>
-    <button id="modeBtn">📄Single</button>
+    <button id="modeBtn">(mode)</button>
 </div>
 
 <script>
@@ -102,6 +102,7 @@
     const img2 = document.getElementById('img2');
     const controlsEl = document.getElementById('controls');
     const modeBtn = document.getElementById('modeBtn');
+    modeBtn.innerText = getModeLabel(mode);
 
     function updateViewer(index) {
         if (index < 0) index = 0;
@@ -229,6 +230,18 @@
         }
     }
 
+    function getModeLabel(mode)
+    {
+    	switch(mode)
+    	{
+		  case 0: return '📄Single';
+		  case 1: return '📖Double';
+		  case 2: return '📖Inverted';
+		  case 3: return '🤖Smart';
+		  default: return 'Invalid';
+		}
+    }
+
     document.getElementById('prevBtn').addEventListener('click', goPrev);
     document.getElementById('nextBtn').addEventListener('click', goNext);
 
@@ -240,11 +253,7 @@
     // Mode toggle
     modeBtn.addEventListener('click', () => {
         mode = (mode + 1) % 4;
-        modeBtn.textContent =
-            mode === 0 ? '📄Single' :
-            mode === 1 ? '📖Double' :
-            mode === 2 ? '📖Inverted' :
-                         '🤖Smart';
+        modeBtn.textContent = getModeLabel(mode);
         updateViewer(currentIndex);
     });
 
