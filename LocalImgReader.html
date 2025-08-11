@@ -166,6 +166,7 @@
     let currentIndex = 0;
     let mode = 3; // 0=Single, 1=Double, 2=Double Inverted, 3=Smart
 
+    // Find & initialize UI elements
     const img1 = document.getElementById('img1');
     const img2 = document.getElementById('img2');
     const filmstripEl = document.getElementById('filmstrip');
@@ -177,6 +178,7 @@
     const nextBtn = document.getElementById('nextBtn');
     const controlsEl = document.getElementById('controls');
 
+    // Transverse
     prevBtn.addEventListener('click', goPrev);
     nextBtn.addEventListener('click', goNext);
 
@@ -192,9 +194,9 @@
         updateViewer(currentIndex);
     });
 
-    // Start
-    initFilmstrip();
+    // Initialize
     updateViewer(currentIndex);
+    initFilmstrip();
 
 
     function updateViewer(index) {
@@ -241,7 +243,7 @@
         if(currentThumbnail)
         {
             currentThumbnail.classList.add('active');
-            
+
             // Scroll to the active thumbnail
             const filmstripScroll = filmstripEl.scrollWidth > filmstripEl.clientWidth;
             if(filmstripScroll)
