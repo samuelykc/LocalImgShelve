@@ -197,22 +197,6 @@
     updateViewer(currentIndex);
 
 
-    function initFilmstrip() {
-        // Clear any existing thumbnails
-        filmstripEl.innerHTML = '';
-        imageList.forEach((imageName, index) => {
-            const thumbnail = document.createElement('img');
-            thumbnail.classList.add('thumbnail');
-            thumbnail.src = `${path}/${imageName}`;
-            thumbnail.dataset.index = index;
-            thumbnail.alt = `Thumbnail for image ${index + 1}`;
-            thumbnail.addEventListener('click', () => {
-                updateViewer(index);
-            });
-            filmstripEl.appendChild(thumbnail);
-        });
-    }
-
     function updateViewer(index) {
         if (index < 0) index = 0;
         if (index >= imageList.length) index = imageList.length - 1;
@@ -225,7 +209,27 @@
         updateFilmstrip();
     }
 
-    function updateFilmstrip() {
+    
+    function initFilmstrip()
+    {
+        // Clear any existing thumbnails
+        filmstripEl.innerHTML = '';
+
+        // Append thumbnails
+        imageList.forEach((imageName, index) => {
+            const thumbnail = document.createElement('img');
+            thumbnail.classList.add('thumbnail');
+            thumbnail.src = `${path}/${imageName}`;
+            thumbnail.dataset.index = index;
+            thumbnail.alt = `Thumbnail for image ${index + 1}`;
+            thumbnail.addEventListener('click', () => {
+                updateViewer(index);
+            });
+            filmstripEl.appendChild(thumbnail);
+        });
+    }
+    function updateFilmstrip()
+    {
         // Remove active class from all thumbnails
         document.querySelectorAll('.thumbnail').forEach(thumb => {
             thumb.classList.remove('active');
@@ -234,11 +238,14 @@
         
         // Add active class to the current thumbnail
         const currentThumbnail = document.querySelector(`.thumbnail[data-index='${currentIndex}']`);
-        if (currentThumbnail) {
+        if(currentThumbnail)
+        {
             currentThumbnail.classList.add('active');
+            
             // Scroll to the active thumbnail
             const filmstripScroll = filmstripEl.scrollWidth > filmstripEl.clientWidth;
-            if (filmstripScroll) {
+            if(filmstripScroll)
+            {
                 filmstripEl.scroll({
                     left: currentThumbnail.offsetLeft - (filmstripEl.clientWidth / 2) + (currentThumbnail.clientWidth / 2),
                     behavior: 'smooth'
