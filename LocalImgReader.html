@@ -202,8 +202,8 @@
     });
 
     // Initialize
-    updateViewer(currentIndex);
     initFilmstrip();
+    updateViewer(currentIndex);
 
 
     function updateViewer(index) {
@@ -231,9 +231,7 @@
             thumbnail.src = `${path}/${imageName}`;
             thumbnail.dataset.index = index;
             thumbnail.alt = `Thumbnail for image ${index + 1}`;
-            thumbnail.addEventListener('click', () => {
-                updateViewer(index);
-            });
+            thumbnail.addEventListener('click', () => { updateViewer(index); });
             filmstripEl.appendChild(thumbnail);
         });
     }
