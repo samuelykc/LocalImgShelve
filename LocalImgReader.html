@@ -187,6 +187,13 @@
         if(e.key === 'ArrowRight') goNext();
     });
 
+    document.addEventListener('wheel', e => {
+        e.preventDefault(); // Prevent default browser scroll behavior
+
+        if(e.deltaY < 0) goPrev();
+        else if (e.deltaY > 0) goNext();
+    }, { passive: false }); // `passive: false` is important to allow e.preventDefault() to work
+
     // Mode toggle
     modeBtn.addEventListener('click', () => {
         mode = (mode + 1) % 4;
