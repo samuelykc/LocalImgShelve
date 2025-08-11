@@ -176,18 +176,18 @@
         }
         else if(viewMode === 3) // Smart mode: decide layout after reading dimensions
         {
-	        // Load current & next to check orientation
-	        Promise.all([
-	            getImageSize(`${path}/${imageList[currentIndex]}`),
-	            getImageSize(currentIndex + 1 < imageList.length ? `${path}/${imageList[currentIndex+1]}` : null)
-	        ]).then(([curr, next]) => {
+            // Load current & next to check orientation
+            Promise.all([
+                getImageSize(`${path}/${imageList[currentIndex]}`),
+                getImageSize(currentIndex + 1 < imageList.length ? `${path}/${imageList[currentIndex+1]}` : null)
+            ]).then(([curr, next]) => {
 
-	        	if (curr && next &&
-	        		curr.height >= curr.width && next.height >= next.width)
-	        		showByMode(2); // Double inverted
-	            else
-	                showByMode(0); // Single
-	        });
+                if (curr && next &&
+                    curr.height >= curr.width && next.height >= next.width)
+                    showByMode(2); // Double inverted
+                else
+                    showByMode(0); // Single
+            });
             return;
         }
 
@@ -246,27 +246,27 @@
         }
         else
         {
-	        // Load previous 2 images to check orientation
-	        return Promise.all([
-	            getImageSize(currentIndex-1 >= 0? `${path}/${imageList[currentIndex-1]}` : null),
-	            getImageSize(currentIndex-2 >= 0? `${path}/${imageList[currentIndex-2]}` : null)
-	        ]).then(([pre1, pre2]) => {
-	            if(pre1 && pre2 &&
-	            	pre1.height >= pre1.width && pre2.height >= pre2.width) return 2;
-	            return 1;
-	        });
+            // Load previous 2 images to check orientation
+            return Promise.all([
+                getImageSize(currentIndex-1 >= 0? `${path}/${imageList[currentIndex-1]}` : null),
+                getImageSize(currentIndex-2 >= 0? `${path}/${imageList[currentIndex-2]}` : null)
+            ]).then(([pre1, pre2]) => {
+                if(pre1 && pre2 &&
+                    pre1.height >= pre1.width && pre2.height >= pre2.width) return 2;
+                return 1;
+            });
         }
     }
 
     function getModeLabel(mode)
     {
-    	switch(mode)
-    	{
-		  case 0: return '📄Single';
-		  case 1: return '📖Double';
-		  case 2: return '📖Inverted';
-		  case 3: return '🤖Smart';
-		  default: return 'Invalid';
-		}
+        switch(mode)
+        {
+            case 0: return '📄Single';
+            case 1: return '📖Double';
+            case 2: return '📖Inverted';
+            case 3: return '🤖Smart';
+            default: return 'Invalid';
+        }
     }
 </script>
