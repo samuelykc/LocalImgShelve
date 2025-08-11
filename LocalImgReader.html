@@ -390,7 +390,7 @@
         }
     }
     function hasPrev() { return currentIndex > 0; }
-    function hasNext() { return currentIndex < imageList.length-1; }
+    function hasNext() { return currentIndex+currentDisplayCount < imageList.length; }
 
     function getModeLabel(mode)
     {
