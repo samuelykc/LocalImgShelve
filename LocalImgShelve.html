@@ -1,220 +1,371 @@
 <html>
-    <!-- <head>
-		<link rel="stylesheet" href="main.css">
-    </head> -->
-    <style type="text/css">
-    	body
-		{
-			background-color: #3c3f41;
-		}
-		.HeaderP
-		{
-			color: white;
-		}
-    	.SquareIcon
-		{
-            width: 250px;
-            height: 280px;
+<head>
+<meta charset="UTF-8">
+<title>Local Image Shelve</title>
+<style>
+    body {
+        background-color: #2b2d31;
+        font-family: "Segoe UI", Roboto, sans-serif;
+        margin: 0;
+        padding: 20px;
+        color: white;
+    }
 
-            display: inline-block;
-			margin: 10px;
-			padding: 0px 10px 0px 10px;
+    /* Breadcrumb header */
+    .HeaderP {
+        font-size: 16px;
+        margin-bottom: 20px;
+        opacity: 0.8;
+    }
 
-			text-align: center;
-			vertical-align: middle;
+    /* Grid layout */
+    .shelf-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+        gap: 20px;
+        margin-bottom: 20px;
+    }
+    .image-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
+        gap: 10px;
+        margin-bottom: 20px;
+    }
 
-			border-radius: 10px;
-			background-color: #919191;
+    /* Folder/Gallery card */
+    .SquareIcon {
+        background-color: #3a3d42;
+        border-radius: 12px;
+        overflow: hidden;
+        display: flex;
+        flex-direction: column;
+        cursor: pointer;
+        box-shadow: 0 2px 6px rgba(0,0,0,0.3);
+        transition: transform 0.15s ease, box-shadow 0.15s ease;
+    }
+    .SquareIcon:hover {
+        transform: translateY(-4px);
+        box-shadow: 0 6px 14px rgba(0,0,0,0.4);
+    }
 
-			cursor: pointer;
-		}
-    	.SquareIconP
-		{
-            height: 42px;
-			padding-bottom: 10px;
-		}
-    	.SquareIconPFolder
-		{
-            height: 80px;
-			padding-bottom: 10px;
-			font-weight: bold;
-		}
-    	.SquareIconImg
-		{
-            height: 200px;
-		}
+    /* Folder/Gallery thumbnail */
+    .SquareIconImg {
+        flex: 1;
+        background-color: #222;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+    .SquareIconImg img {
+        max-width: 100%;
+        max-height: 100%;
+        object-fit: contain;
+    }
 
-		img
-		{
-            max-width: 100%;
-            max-height: 100%;
-		}
-    </style>
+    /* Name overlay */
+    .SquareIconP {
+        padding: 10px;
+        font-size: 14px;
+        font-weight: 500;
+        background: rgba(0,0,0,0.25);
+        text-align: center;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+    }
+    .SquareIconPFolder {
+        font-weight: bold;
+        color: #ffd479;
+    }
 
-	<body>
+    /* Loose image cards */
+    .ImageCard {
+        width: 120px;       /* fixed square size */
+        height: 120px;
+        background-color: #222;
+        border-radius: 6px;
+        overflow: hidden;
+        cursor: pointer;
+        transition: transform 0.12s ease, box-shadow 0.12s ease;
+    }
+    .ImageCard:hover {
+        transform: scale(1.05);
+        box-shadow: 0 4px 12px rgba(0,0,0,0.4);
+    }
 
-	</body>
+    /* Loose image thumbnail */
+    .ImageCard img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        display: block;
+    }
+</style>
+</head>
+<body></body>
 
-	<script src="LocalImgShelveJson.txt"></script>
-	<script>
-		// records = [
-		// 	{
-		// 		folder:"Comic",
-		// 		contents:
-		// 		[
-		// 			{
-		// 				folder:"Comic1",
-		// 				contents:
-		// 				[
-		// 					"000.jpg",
-		// 					"001.jpg",
-		// 					"002.jpg",
-		// 					"003.jpg"
-		// 				]
-		// 			},
-		// 			{
-		// 				folder:"Comic2",
-		// 				contents:
-		// 				[
-		// 					"001.jpg",
-		// 					"002.jpg",
-		// 					"003.jpg"
-		// 				]
-		// 			}
-		// 		]
-		// 	},
-		// 	{
+<script src="LocalImgShelveJson.txt">
+// records = [
+//  {
+//      folder:"Comic",
+//      contents:
+//      [
+//          {
+//              folder:"Comic1",
+//              contents:
+//              [
+//                  "000.jpg",
+//                  "001.jpg",
+//                  "002.jpg",
+//                  "003.jpg"
+//              ]
+//          },
+//          {
+//              folder:"Comic2",
+//              contents:
+//              [
+//                  "001.jpg",
+//                  "002.jpg",
+//                  "003.jpg"
+//              ]
+//          }
+//      ]
+//  },
+//  {
 
-		// 	}
-		// ];
+//  }
+// ];
+</script>
 
+<script>
+let path = [];
+let lastVisited = [];
 
-		let path = [];
-		
-	  	function pathChanged()
-	  	{
-	  		console.log(path);
+function pathChanged()
+{
+    // clear body
+    document.body.innerHTML = '';
 
-	  		//clear body
-	  		document.body.innerHTML = '';
+    // add base elements
+    let headerP = document.createElement("p");
+    headerP.innerHTML = "Path: " + path.join('/');
+    headerP.classList.add('HeaderP');
+    document.body.appendChild(headerP);
 
+    let gridFolder = document.createElement("div");
+    gridFolder.classList.add("shelf-grid");
+    document.body.appendChild(gridFolder);
 
-	  		//print path
-			let headerP = document.createElement("p");
-			headerP.innerHTML = "Path: " + path.join('/');
-			headerP.classList.add('HeaderP')
-			document.body.appendChild(headerP);
+    let gridGallery = document.createElement("div");
+    gridGallery.classList.add("shelf-grid");
+    document.body.appendChild(gridGallery);
 
-
-	  		//dig into the designated level accroding to current path
-	  		recordPos = records;
-
-			for (const p of path) {
-				const nextPos = recordPos.find(element => element.folder === p);
-				recordPos = nextPos.contents
-			}
-
-
-	  		//print folders in this level
-			for (const record of recordPos) {
-				//create SquareIcon
-				let div = document.createElement("div");
-				div.classList.add('SquareIcon')
-				div.addEventListener('click', event => {browse(record)})
-				document.body.appendChild(div);
-
-				//create SquareIconP
-				let div_p = document.createElement("div");
-				div_p.classList.add('SquareIconP')
-				div.appendChild(div_p);
-
-				let p = document.createElement("p");
-				p.innerHTML = record.folder;
-				div_p.appendChild(p);
-
-				//create SquareIconImg
-				if(record.contents && (typeof record.contents[0])==="string")
-				{
-					let div_img = document.createElement("div");
-					div_img.classList.add('SquareIconImg')
-					div.appendChild(div_img);
-
-					let img = document.createElement("img");
-					img.src = path.join('/') + (path.length>0?'/':'')  + record.folder + '/' + encodeURIComponent(record.contents[0]);
-					div_img.appendChild(img);
-				}
-				else
-				{
-					div_p.classList.add('SquareIconPFolder')
-				}
-
-				// console.log(record.contents)
-				// console.log(typeof record.contents[0])
-			}
-		}
-
-
-	  	function browse(record)
-	  	{
-	  		//reject empty folder
-	  		if(!record.contents || record.contents.length <= 0)
-	  		{
-	  			return;
-	  		}
-
-			//open gallery
-	  		if(record.contents && (typeof record.contents[0])==="string")
-	  		{
-				var win = window.open("LocalImgReader.html?"+
-					"imgList=" + encodeURIComponent(record.contents.join(':')) + //list of file names
-					"&path=" + encodeURIComponent(path.join('/') + (path.length>0?'/':'') + record.folder));//path prefix for files
-				win.focus();
-	  		}
-			//open folder
-	  		else
-	  		{
-		  		path.push(record.folder);
-				pathChanged();
-	  		}
-		}
-
-	  	function goBack()
-	  	{
-	  		path.pop();
-			pathChanged();
-		}
-
-		
-
-		pathChanged();
+    let gridImages = document.createElement("div");
+    gridImages.classList.add("image-grid");
+    document.body.appendChild(gridImages);
 
 
+    // dig into the designated level accroding to current path
+    let recordPos = records;
+    for(const p of path)
+    {
+        const nextPos = recordPos.find(element => element.folder === p);
+        recordPos = nextPos.contents;
+    }
 
+    // Separate into folders and loose image files
+    let folders = recordPos.filter(r => typeof r === "object" && r.folder);
+    let files   = recordPos.filter(r => typeof r === "string");
 
-		//------------- paging -------------
-		document.body.onkeydown = function(e)
-		{
-			// console.log(e.code);
-			switch (event.key)
-			{
-			    case "GoBack": case "Backspace":
-			    	e.preventDefault();
-			    	goBack();
-			        break;
-			}
-		};
+    // --- Folders ---
+    for(const record of folders)
+    {
+        let div = createFolderCard(record);
 
-		window.addEventListener("mouseup", e => {
-			switch (event.button)
-			{
-			    case 3:
-			    	e.preventDefault();
-			    	goBack();
-			        break;
-         		case 4:
-			        break;
-			}
-        })
-		//------------- paging -------------
-	</script>
+        // Append depending on whether folder has direct images
+        let hasImage = div.childNodes.length > 1;
+
+        if(hasImage) gridGallery.appendChild(div);
+        else gridFolder.appendChild(div);
+    }
+
+    // --- Loose Images ---
+    files.forEach((filename, idx) =>
+    {
+        let imgCard = document.createElement("div");
+        imgCard.classList.add('ImageCard');
+
+        let div_img = document.createElement("div");
+        imgCard.appendChild(div_img);
+
+        let img = document.createElement("img");
+        img.src = path.join('/') + (path.length > 0 ? '/' : '') + encodeURIComponent(filename);
+        div_img.appendChild(img);
+
+        imgCard.addEventListener('click', () => {
+            // Open LocalImgReader starting from this image
+            let fileList = files.slice(idx).concat(files.slice(0, idx)); // or just files
+            window.open(
+                "LocalImgReader.html?" +
+                "imgList=" + encodeURIComponent(files.join(':')) +
+                "&path=" + encodeURIComponent(path.join('/'))
+            ).focus();
+        });
+
+        gridImages.appendChild(imgCard);
+    });
+}
+
+function createFolderCard(record)
+{
+    let div = document.createElement("div");
+    div.classList.add('SquareIcon');
+
+    let div_p = document.createElement("div");
+    div_p.classList.add('SquareIconP');
+    if (!record.contents || typeof record.contents[0] !== "string")
+    {
+        div_p.classList.add('SquareIconPFolder');
+    }
+    div.appendChild(div_p);
+
+    // create label
+    let p = document.createElement("p");
+    p.innerHTML = record.folder;
+    div_p.appendChild(p);
+
+    // create thumbnail
+    let firstImage = record.contents && record.contents.find(c => typeof c === "string"); // find first image in this folder (non-recursive)
+    if(firstImage)
+    {
+        let div_img = document.createElement("div");
+        div_img.classList.add('SquareIconImg');
+        div.appendChild(div_img);
+
+        let img = document.createElement("img");
+        img.src = path.join('/') + (path.length>0? '/': '') + record.folder + '/' + encodeURIComponent(firstImage);
+        div_img.appendChild(img);
+    }
+
+    // mouse actions
+    div.addEventListener('mousedown', e =>
+    {
+        e.preventDefault();
+        switch(e.button)
+        {
+            case 0:
+                // Left click: open folder/gallery
+                browse(record);
+                break;
+            case 1:
+                // Middle click: force open gallery
+                browseAsGallery(record);
+                break;
+            case 2:
+                // Right click: open all images recursively
+                let allImages = collectImagesRecursive(record, "");
+                if(allImages.length > 0)
+                {
+                    let win = window.open("LocalImgReader.html?" +
+                        "imgList=" + encodeURIComponent(allImages.join(':')) +
+                        "&path=" + encodeURIComponent(path.join('/') + (path.length>0?'/':'') + record.folder)); //path prefix for files
+                    win.focus();
+                }
+                break;
+        }
+    });
+
+    return div;
+}
+
+function browse(record)
+{
+    // reject empty folder
+    if(!record.contents || record.contents.length <= 0) return;
+
+    // open gallery
+    if(record.contents && (typeof record.contents[0])==="string")
+    {
+        browseAsGallery(record);
+    }
+    // open folder
+    else
+    {
+        path.push(record.folder);
+        lastVisited = [];
+        pathChanged();
+    }
+}
+
+function browseAsGallery(record)
+{
+    const fileList = record.contents.filter(item => typeof item === 'string'); // extract file names (filter out folders)
+
+    var win = window.open("LocalImgReader.html?"+
+        "imgList=" + encodeURIComponent(fileList.join(':')) + //list of file names
+        "&path=" + encodeURIComponent(path.join('/') + (path.length>0?'/':'') + record.folder)); //path prefix for files
+    win.focus();
+}
+
+// recursively collect all images
+function collectImagesRecursive(record, prefixPath) {
+    let images = [];
+    if(!record.contents) return images;
+
+    for(let item of record.contents)
+    {
+        if (typeof item === "string") {
+            images.push(prefixPath + '/' + item);
+        } else if (typeof item === "object" && item.folder) {
+            images = images.concat(collectImagesRecursive(item, prefixPath + '/' + item.folder));
+        }
+    }
+    return images;
+}
+
+function goBack()
+{
+    if(path.length>0)
+    {
+        lastVisited.push(path.pop());
+        pathChanged();
+    }
+}
+function goForward()
+{
+    if(lastVisited.length>0)
+    {
+        path.push(lastVisited.pop());
+        pathChanged();
+    }
+}
+
+//------------- paging -------------
+document.body.onkeydown = function(e)
+{
+    switch(e.key)
+    {
+        case "GoBack": case "Backspace":
+            e.preventDefault();
+            goBack();
+            break;
+    }
+};
+
+window.addEventListener("mouseup", e => {
+    switch(event.button)
+    {
+        case 3: // back mouse button
+            e.preventDefault();
+            goBack();
+            break;
+        case 4: // forward mouse button
+            e.preventDefault();
+            goForward();
+            break;
+    }
+});
+
+pathChanged();
+</script>
 </html>
