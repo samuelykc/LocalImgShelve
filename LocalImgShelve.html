@@ -126,10 +126,14 @@ function pathChanged()
     gridFolder.classList.add("shelf-grid");
     document.body.appendChild(gridFolder);
 
+    let gridGallery = document.createElement("div");
+    gridGallery.classList.add("shelf-grid");
+    document.body.appendChild(gridGallery);
 
     let gridImages = document.createElement("div");
     gridImages.classList.add("shelf-grid");
     document.body.appendChild(gridImages);
+
 
     // dig into the designated level accroding to current path
     let recordPos = records;
@@ -139,67 +143,110 @@ function pathChanged()
         recordPos = nextPos.contents;
     }
 
-    // print folders in this level
-    for (const record of recordPos) {
-        let div = document.createElement("div");
-        div.classList.add('SquareIcon');
+    // Separate into folders and loose image files
+    let folders = recordPos.filter(r => typeof r === "object" && r.folder);
+    let files   = recordPos.filter(r => typeof r === "string");
 
-        let div_p = document.createElement("div");
-        div_p.classList.add('SquareIconP');
-        if (!record.contents || typeof record.contents[0] !== "string") {
-            div_p.classList.add('SquareIconPFolder');
-        }
-        div.appendChild(div_p);
+    // --- Folders ---
+    for(const record of folders)
+    {
+        let div = createFolderCard(record);
 
-        let p = document.createElement("p");
-        p.innerHTML = record.folder;
-        div_p.appendChild(p);
+        // Append depending on whether folder has direct images
+        let hasImage = div.childNodes.length > 1;
 
+        if(hasImage) gridGallery.appendChild(div);
+        else gridFolder.appendChild(div);
+    }
+
+    // --- Loose Images ---
+    files.forEach((filename, idx) =>
+    {
+        let imgCard = document.createElement("div");
+        imgCard.classList.add('SquareIcon');
+
+        let div_img = document.createElement("div");
+        div_img.classList.add('SquareIconImg');
+        imgCard.appendChild(div_img);
+
+        let img = document.createElement("img");
+        img.src = path.join('/') + (path.length > 0 ? '/' : '') + encodeURIComponent(filename);
+        div_img.appendChild(img);
+
+        imgCard.addEventListener('click', () => {
+            // Open LocalImgReader starting from this image
+            let fileList = files.slice(idx).concat(files.slice(0, idx)); // or just files
+            window.open(
+                "LocalImgReader.html?" +
+                "imgList=" + encodeURIComponent(files.join(':')) +
+                "&path=" + encodeURIComponent(path.join('/'))
+            ).focus();
+        });
+
+        gridImages.appendChild(imgCard);
+    });
+}
+
+function createFolderCard(record)
+{
+    let div = document.createElement("div");
+    div.classList.add('SquareIcon');
+
+    let div_p = document.createElement("div");
+    div_p.classList.add('SquareIconP');
+    if (!record.contents || typeof record.contents[0] !== "string")
+    {
+        div_p.classList.add('SquareIconPFolder');
+    }
+    div.appendChild(div_p);
+
+    // create label
+    let p = document.createElement("p");
+    p.innerHTML = record.folder;
+    div_p.appendChild(p);
+
+    // create thumbnail
+    let firstImage = record.contents && record.contents.find(c => typeof c === "string"); // find first image in this folder (non-recursive)
+    if(firstImage)
+    {
         let div_img = document.createElement("div");
         div_img.classList.add('SquareIconImg');
         div.appendChild(div_img);
 
-        // find first image in this folder (non-recursive)
-        let firstImage = record.contents && record.contents.find(c => typeof c === "string");
-        if(firstImage)
-        {
-            let img = document.createElement("img");
-            img.src = path.join('/') + (path.length>0? '/': '') + record.folder + '/' + encodeURIComponent(firstImage);
-            div_img.appendChild(img);
-        }
-
-        // mouse actions
-        div.addEventListener('mousedown', e =>
-        {
-            e.preventDefault();
-            switch(e.button)
-            {
-                case 0:
-                    // Left click: open folder/gallery
-                    browse(record);
-                    break;
-                case 1:
-                    // Middle click: force open gallery
-                    browseAsGallery(record);
-                    break;
-                case 2:
-                    // Right click: open all images recursively
-                    let allImages = collectImagesRecursive(record, "");
-                    if(allImages.length > 0)
-                    {
-                        let win = window.open("LocalImgReader.html?" +
-                            "imgList=" + encodeURIComponent(allImages.join(':')) +
-                            "&path=" + encodeURIComponent(path.join('/') + (path.length>0?'/':'') + record.folder)); //path prefix for files
-                        win.focus();
-                    }
-                    break;
-            }
-        });
-
-        // append to grid depending on whether any image exists in the folder
-        if(firstImage) gridGallery.appendChild(div);
-        else gridFolder.appendChild(div);
+        let img = document.createElement("img");
+        img.src = path.join('/') + (path.length>0? '/': '') + record.folder + '/' + encodeURIComponent(firstImage);
+        div_img.appendChild(img);
     }
+
+    // mouse actions
+    div.addEventListener('mousedown', e =>
+    {
+        e.preventDefault();
+        switch(e.button)
+        {
+            case 0:
+                // Left click: open folder/gallery
+                browse(record);
+                break;
+            case 1:
+                // Middle click: force open gallery
+                browseAsGallery(record);
+                break;
+            case 2:
+                // Right click: open all images recursively
+                let allImages = collectImagesRecursive(record, "");
+                if(allImages.length > 0)
+                {
+                    let win = window.open("LocalImgReader.html?" +
+                        "imgList=" + encodeURIComponent(allImages.join(':')) +
+                        "&path=" + encodeURIComponent(path.join('/') + (path.length>0?'/':'') + record.folder)); //path prefix for files
+                    win.focus();
+                }
+                break;
+        }
+    });
+
+    return div;
 }
 
 function browse(record)
