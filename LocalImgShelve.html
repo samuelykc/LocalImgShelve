@@ -112,30 +112,34 @@
 
     function pathChanged()
     {
-        //clear body
+        // clear body
         document.body.innerHTML = '';
 
+        // add base elements
         let headerP = document.createElement("p");
         headerP.innerHTML = "Path: " + path.join('/');
         headerP.classList.add('HeaderP');
         document.body.appendChild(headerP);
 
-        let grid = document.createElement("div");
-        grid.classList.add("shelf-grid");
-        document.body.appendChild(grid);
+        let gridFolder = document.createElement("div");
+        gridFolder.classList.add("shelf-grid");
+        document.body.appendChild(gridFolder);
 
-        //dig into the designated level accroding to current path
+        let gridGallery = document.createElement("div");
+        gridGallery.classList.add("shelf-grid");
+        document.body.appendChild(gridGallery);
+
+        // dig into the designated level accroding to current path
         let recordPos = records;
         for (const p of path) {
             const nextPos = recordPos.find(element => element.folder === p);
             recordPos = nextPos.contents;
         }
 
-        //print folders in this level
+        // print folders in this level
         for (const record of recordPos) {
             let div = document.createElement("div");
             div.classList.add('SquareIcon');
-            grid.appendChild(div);
 
             let div_p = document.createElement("div");
             div_p.classList.add('SquareIconP');
@@ -188,6 +192,10 @@
                         break;
                 }
             });
+
+            // append to grid depending on whether any image exists in the folder
+            if(firstImage) gridGallery.appendChild(div);
+            else gridFolder.appendChild(div);
         }
     }
 
