@@ -235,7 +235,7 @@
         imageList.forEach((imageName, index) => {
             const thumbnail = document.createElement('img');
             thumbnail.classList.add('thumbnail');
-            thumbnail.src = `${path}/${imageName}`;
+            thumbnail.src = getImageSrc(path, imageName);
             thumbnail.dataset.index = index;
             thumbnail.alt = `Thumbnail for image ${index + 1}`;
             thumbnail.addEventListener('click', () => { updateViewer(index); });
@@ -312,8 +312,8 @@
         {
             // Load current & next to check orientation
             return Promise.all([
-                getImageSize(`${path}/${imageList[currentIndex]}`),
-                getImageSize(currentIndex + 1 < imageList.length ? `${path}/${imageList[currentIndex+1]}` : null)
+                getImageSize(getImageSrc(path, imageList[currentIndex])),
+                getImageSize(currentIndex+1 < imageList.length? getImageSrc(path, imageList[currentIndex+1]): null)
             ]).then(([curr, next]) => {
 
                 if(curr && next &&
@@ -328,6 +328,7 @@
         updatePagination();
     }
 
+    function getImageSrc(path, filename) { return (path? path+'/': '') + filename; }
     function getImageSize(src) {
         return new Promise(resolve => {
             if (!src) return resolve(null);
@@ -340,7 +341,7 @@
 
     function setImage(imgEl, index, onLoad) {
         if (index >= 0 && index < imageList.length) {
-            imgEl.src = `${path}/${imageList[index]}`;
+            imgEl.src = getImageSrc(path, imageList[index]);
             imgEl.onload = onLoad;
         } else {
             imgEl.src = '';
@@ -355,7 +356,7 @@
     function preloadImage(index) {
         if (index >= 0 && index < imageList.length) {
             const preImg = new Image();
-            preImg.src = `${path}/${imageList[index]}`;
+            preImg.src = getImageSrc(path, imageList[index]);
         }
     }
 
@@ -386,8 +387,8 @@
         {
             // Load previous 2 images to check orientation
             return Promise.all([
-                getImageSize(currentIndex-1 >= 0? `${path}/${imageList[currentIndex-1]}` : null),
-                getImageSize(currentIndex-2 >= 0? `${path}/${imageList[currentIndex-2]}` : null)
+                getImageSize(currentIndex-1 >= 0? getImageSrc(path, imageList[currentIndex-1]) : null),
+                getImageSize(currentIndex-2 >= 0? getImageSrc(path, imageList[currentIndex-2]) : null)
             ]).then(([pre1, pre2]) => {
                 if(pre1 && pre2 &&
                     pre1.height >= pre1.width && pre2.height >= pre2.width) return 2;
