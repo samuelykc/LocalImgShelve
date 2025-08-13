@@ -4,37 +4,71 @@
 <title>Local Image Shelve</title>
 <style>
     body {
-        background-color: #3c3f41;
-    }
-    .HeaderP {
+        background-color: #2b2d31;
+        font-family: "Segoe UI", Roboto, sans-serif;
+        margin: 0;
+        padding: 20px;
         color: white;
     }
-    .SquareIcon {
-        width: 250px;
-        height: 280px;
-        display: inline-block;
-        margin: 10px;
-        padding: 0px 10px;
-        text-align: center;
-        vertical-align: middle;
-        border-radius: 10px;
-        background-color: #919191;
-        cursor: pointer;
-        position: relative;
+
+    /* Breadcrumb header */
+    .HeaderP {
+        font-size: 16px;
+        margin-bottom: 20px;
+        opacity: 0.8;
     }
+
+    /* Grid layout */
+    .shelf-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+        gap: 20px;
+    }
+
+    /* Folder/Image card */
+    .SquareIcon {
+        background-color: #3a3d42;
+        border-radius: 12px;
+        overflow: hidden;
+        display: flex;
+        flex-direction: column;
+        cursor: pointer;
+        box-shadow: 0 2px 6px rgba(0,0,0,0.3);
+        transition: transform 0.15s ease, box-shadow 0.15s ease;
+    }
+    .SquareIcon:hover {
+        transform: translateY(-4px);
+        box-shadow: 0 6px 14px rgba(0,0,0,0.4);
+    }
+
+    /* Thumbnail container */
+    .SquareIconImg {
+        flex: 1;
+        background-color: #222;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+    .SquareIconImg img {
+        max-width: 100%;
+        max-height: 100%;
+        object-fit: contain;
+    }
+
+    /* Name overlay */
     .SquareIconP {
-        height: 42px;
-        padding-bottom: 10px;
+        padding: 10px;
+        font-size: 14px;
+        font-weight: 500;
+        background: rgba(0,0,0,0.25);
+        text-align: center;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
     }
     .SquareIconPFolder {
         font-weight: bold;
-    }
-    .SquareIconImg {
-        height: 200px;
-    }
-    img {
-        max-width: 100%;
-        max-height: 100%;
+        color: #ffd479;
     }
 </style>
 </head>
@@ -86,6 +120,10 @@
         headerP.classList.add('HeaderP');
         document.body.appendChild(headerP);
 
+        let grid = document.createElement("div");
+        grid.classList.add("shelf-grid");
+        document.body.appendChild(grid);
+
         //dig into the designated level accroding to current path
         let recordPos = records;
         for (const p of path) {
@@ -97,7 +135,7 @@
         for (const record of recordPos) {
             let div = document.createElement("div");
             div.classList.add('SquareIcon');
-            document.body.appendChild(div);
+            grid.appendChild(div);
 
             let div_p = document.createElement("div");
             div_p.classList.add('SquareIconP');
