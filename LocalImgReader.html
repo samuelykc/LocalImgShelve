@@ -163,6 +163,12 @@
     let imageList = decodeURIComponent(urlParams.get('imgList')).split(':');
     let path = decodeURIComponent(urlParams.get('path'));
 
+    // Set page title
+    let pathParts = path.split('/').filter(Boolean); // remove empty parts
+    if(pathParts.length > 0) {
+        document.title = pathParts[pathParts.length - 1];
+    }
+
     let currentIndex = 0;
     let currentDisplayCount = 1;
     let mode = 3; // 0=Single, 1=Double, 2=Double Inverted, 3=Smart
