@@ -108,186 +108,188 @@
 </script>
 
 <script>
-    let path = [];
-    let lastVisited = [];
+let path = [];
+let lastVisited = [];
 
-    function pathChanged()
+function pathChanged()
+{
+    // clear body
+    document.body.innerHTML = '';
+
+    // add base elements
+    let headerP = document.createElement("p");
+    headerP.innerHTML = "Path: " + path.join('/');
+    headerP.classList.add('HeaderP');
+    document.body.appendChild(headerP);
+
+    let gridFolder = document.createElement("div");
+    gridFolder.classList.add("shelf-grid");
+    document.body.appendChild(gridFolder);
+
+
+    let gridImages = document.createElement("div");
+    gridImages.classList.add("shelf-grid");
+    document.body.appendChild(gridImages);
+
+    // dig into the designated level accroding to current path
+    let recordPos = records;
+    for(const p of path)
     {
-        // clear body
-        document.body.innerHTML = '';
+        const nextPos = recordPos.find(element => element.folder === p);
+        recordPos = nextPos.contents;
+    }
 
-        // add base elements
-        let headerP = document.createElement("p");
-        headerP.innerHTML = "Path: " + path.join('/');
-        headerP.classList.add('HeaderP');
-        document.body.appendChild(headerP);
+    // print folders in this level
+    for (const record of recordPos) {
+        let div = document.createElement("div");
+        div.classList.add('SquareIcon');
 
-        let gridFolder = document.createElement("div");
-        gridFolder.classList.add("shelf-grid");
-        document.body.appendChild(gridFolder);
+        let div_p = document.createElement("div");
+        div_p.classList.add('SquareIconP');
+        if (!record.contents || typeof record.contents[0] !== "string") {
+            div_p.classList.add('SquareIconPFolder');
+        }
+        div.appendChild(div_p);
 
-        let gridGallery = document.createElement("div");
-        gridGallery.classList.add("shelf-grid");
-        document.body.appendChild(gridGallery);
+        let p = document.createElement("p");
+        p.innerHTML = record.folder;
+        div_p.appendChild(p);
 
-        // dig into the designated level accroding to current path
-        let recordPos = records;
-        for (const p of path) {
-            const nextPos = recordPos.find(element => element.folder === p);
-            recordPos = nextPos.contents;
+        let div_img = document.createElement("div");
+        div_img.classList.add('SquareIconImg');
+        div.appendChild(div_img);
+
+        // find first image in this folder (non-recursive)
+        let firstImage = record.contents && record.contents.find(c => typeof c === "string");
+        if(firstImage)
+        {
+            let img = document.createElement("img");
+            img.src = path.join('/') + (path.length>0? '/': '') + record.folder + '/' + encodeURIComponent(firstImage);
+            div_img.appendChild(img);
         }
 
-        // print folders in this level
-        for (const record of recordPos) {
-            let div = document.createElement("div");
-            div.classList.add('SquareIcon');
-
-            let div_p = document.createElement("div");
-            div_p.classList.add('SquareIconP');
-            if (!record.contents || typeof record.contents[0] !== "string") {
-                div_p.classList.add('SquareIconPFolder');
-            }
-            div.appendChild(div_p);
-
-            let p = document.createElement("p");
-            p.innerHTML = record.folder;
-            div_p.appendChild(p);
-
-            let div_img = document.createElement("div");
-            div_img.classList.add('SquareIconImg');
-            div.appendChild(div_img);
-
-            // find first image in this folder (non-recursive)
-            let firstImage = record.contents && record.contents.find(c => typeof c === "string");
-            if(firstImage)
+        // mouse actions
+        div.addEventListener('mousedown', e =>
+        {
+            e.preventDefault();
+            switch(e.button)
             {
-                let img = document.createElement("img");
-                img.src = path.join('/') + (path.length>0? '/': '') + record.folder + '/' + encodeURIComponent(firstImage);
-                div_img.appendChild(img);
+                case 0:
+                    // Left click: open folder/gallery
+                    browse(record);
+                    break;
+                case 1:
+                    // Middle click: force open gallery
+                    browseAsGallery(record);
+                    break;
+                case 2:
+                    // Right click: open all images recursively
+                    let allImages = collectImagesRecursive(record, "");
+                    if(allImages.length > 0)
+                    {
+                        let win = window.open("LocalImgReader.html?" +
+                            "imgList=" + encodeURIComponent(allImages.join(':')) +
+                            "&path=" + encodeURIComponent(path.join('/') + (path.length>0?'/':'') + record.folder)); //path prefix for files
+                        win.focus();
+                    }
+                    break;
             }
+        });
 
-            // mouse actions
-            div.addEventListener('mousedown', e =>
-            {
-                e.preventDefault();
-                switch(e.button)
-                {
-                    case 0:
-                        // Left click: open folder/gallery
-                        browse(record);
-                        break;
-                    case 1:
-                        // Middle click: force open gallery
-                        browseAsGallery(record);
-                        break;
-                    case 2:
-                        // Right click: open all images recursively
-                        let allImages = collectImagesRecursive(record, "");
-                        if(allImages.length > 0)
-                        {
-                            let win = window.open("LocalImgReader.html?" +
-                                "imgList=" + encodeURIComponent(allImages.join(':')) +
-                                "&path=" + encodeURIComponent(path.join('/') + (path.length>0?'/':'') + record.folder)); //path prefix for files
-                            win.focus();
-                        }
-                        break;
-                }
-            });
-
-            // append to grid depending on whether any image exists in the folder
-            if(firstImage) gridGallery.appendChild(div);
-            else gridFolder.appendChild(div);
-        }
+        // append to grid depending on whether any image exists in the folder
+        if(firstImage) gridGallery.appendChild(div);
+        else gridFolder.appendChild(div);
     }
+}
 
-    function browse(record)
+function browse(record)
+{
+    // reject empty folder
+    if(!record.contents || record.contents.length <= 0) return;
+
+    // open gallery
+    if(record.contents && (typeof record.contents[0])==="string")
     {
-        // reject empty folder
-        if(!record.contents || record.contents.length <= 0) return;
-
-        // open gallery
-        if(record.contents && (typeof record.contents[0])==="string")
-        {
-            browseAsGallery(record);
-        }
-        // open folder
-        else
-        {
-            path.push(record.folder);
-            lastVisited = [];
-            pathChanged();
-        }
+        browseAsGallery(record);
     }
-
-    function browseAsGallery(record)
+    // open folder
+    else
     {
-        const fileList = record.contents.filter(item => typeof item === 'string'); // extract file names (filter out folders)
-
-        var win = window.open("LocalImgReader.html?"+
-            "imgList=" + encodeURIComponent(fileList.join(':')) + //list of file names
-            "&path=" + encodeURIComponent(path.join('/') + (path.length>0?'/':'') + record.folder)); //path prefix for files
-        win.focus();
+        path.push(record.folder);
+        lastVisited = [];
+        pathChanged();
     }
+}
 
-    // recursively collect all images
-    function collectImagesRecursive(record, prefixPath) {
-        let images = [];
-        if(!record.contents) return images;
+function browseAsGallery(record)
+{
+    const fileList = record.contents.filter(item => typeof item === 'string'); // extract file names (filter out folders)
 
-        for(let item of record.contents)
-        {
-            if (typeof item === "string") {
-                images.push(prefixPath + '/' + item);
-            } else if (typeof item === "object" && item.folder) {
-                images = images.concat(collectImagesRecursive(item, prefixPath + '/' + item.folder));
-            }
-        }
-        return images;
-    }
+    var win = window.open("LocalImgReader.html?"+
+        "imgList=" + encodeURIComponent(fileList.join(':')) + //list of file names
+        "&path=" + encodeURIComponent(path.join('/') + (path.length>0?'/':'') + record.folder)); //path prefix for files
+    win.focus();
+}
 
-    function goBack()
+// recursively collect all images
+function collectImagesRecursive(record, prefixPath) {
+    let images = [];
+    if(!record.contents) return images;
+
+    for(let item of record.contents)
     {
-        if(path.length>0)
-        {
-            lastVisited.push(path.pop());
-            pathChanged();
+        if (typeof item === "string") {
+            images.push(prefixPath + '/' + item);
+        } else if (typeof item === "object" && item.folder) {
+            images = images.concat(collectImagesRecursive(item, prefixPath + '/' + item.folder));
         }
     }
-    function goForward()
+    return images;
+}
+
+function goBack()
+{
+    if(path.length>0)
     {
-        if(lastVisited.length>0)
-        {
-            path.push(lastVisited.pop());
-            pathChanged();
-        }
+        lastVisited.push(path.pop());
+        pathChanged();
     }
-
-    //------------- paging -------------
-    document.body.onkeydown = function(e)
+}
+function goForward()
+{
+    if(lastVisited.length>0)
     {
-        switch(e.key)
-        {
-            case "GoBack": case "Backspace":
-                e.preventDefault();
-                goBack();
-                break;
-        }
-    };
+        path.push(lastVisited.pop());
+        pathChanged();
+    }
+}
 
-    window.addEventListener("mouseup", e => {
-        switch(event.button)
-        {
-            case 3: // back mouse button
-                e.preventDefault();
-                goBack();
-                break;
-            case 4: // forward mouse button
-                e.preventDefault();
-                goForward();
-                break;
-        }
-    });
+//------------- paging -------------
+document.body.onkeydown = function(e)
+{
+    switch(e.key)
+    {
+        case "GoBack": case "Backspace":
+            e.preventDefault();
+            goBack();
+            break;
+    }
+};
 
-    pathChanged();
+window.addEventListener("mouseup", e => {
+    switch(event.button)
+    {
+        case 3: // back mouse button
+            e.preventDefault();
+            goBack();
+            break;
+        case 4: // forward mouse button
+            e.preventDefault();
+            goForward();
+            break;
+    }
+});
+
+pathChanged();
 </script>
 </html>
