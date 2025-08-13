@@ -76,34 +76,34 @@
 
 <script src="LocalImgShelveJson.txt">
 // records = [
-// 	{
-// 		folder:"Comic",
-// 		contents:
-// 		[
-// 			{
-// 				folder:"Comic1",
-// 				contents:
-// 				[
-// 					"000.jpg",
-// 					"001.jpg",
-// 					"002.jpg",
-// 					"003.jpg"
-// 				]
-// 			},
-// 			{
-// 				folder:"Comic2",
-// 				contents:
-// 				[
-// 					"001.jpg",
-// 					"002.jpg",
-// 					"003.jpg"
-// 				]
-// 			}
-// 		]
-// 	},
-// 	{
+//  {
+//      folder:"Comic",
+//      contents:
+//      [
+//          {
+//              folder:"Comic1",
+//              contents:
+//              [
+//                  "000.jpg",
+//                  "001.jpg",
+//                  "002.jpg",
+//                  "003.jpg"
+//              ]
+//          },
+//          {
+//              folder:"Comic2",
+//              contents:
+//              [
+//                  "001.jpg",
+//                  "002.jpg",
+//                  "003.jpg"
+//              ]
+//          }
+//      ]
+//  },
+//  {
 
-// 	}
+//  }
 // ];
 </script>
 
@@ -157,7 +157,7 @@
             if(firstImage)
             {
                 let img = document.createElement("img");
-                img.src = path.join('/') + (path.length > 0 ? '/' : '') + record.folder + '/' + encodeURIComponent(firstImage);
+                img.src = path.join('/') + (path.length>0? '/': '') + record.folder + '/' + encodeURIComponent(firstImage);
                 div_img.appendChild(img);
             }
 
