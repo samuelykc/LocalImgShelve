@@ -109,6 +109,7 @@
 
 <script>
     let path = [];
+    let lastVisited = [];
 
     function pathChanged()
     {
@@ -213,6 +214,7 @@
         else
         {
             path.push(record.folder);
+            lastVisited = [];
             pathChanged();
         }
     }
@@ -245,8 +247,19 @@
 
     function goBack()
     {
-        path.pop();
-        pathChanged();
+        if(path.length>0)
+        {
+            lastVisited.push(path.pop());
+            pathChanged();
+        }
+    }
+    function goForward()
+    {
+        if(lastVisited.length>0)
+        {
+            path.push(lastVisited.pop());
+            pathChanged();
+        }
     }
 
     //------------- paging -------------
@@ -264,11 +277,13 @@
     window.addEventListener("mouseup", e => {
         switch(event.button)
         {
-            case 3:
+            case 3: // back mouse button
                 e.preventDefault();
                 goBack();
                 break;
-            case 4:
+            case 4: // forward mouse button
+                e.preventDefault();
+                goForward();
                 break;
         }
     });
